@@ -1,0 +1,28 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+.body {
+  position: relative;
+  color: white;
+  height: 97vh;
+  width: 100vw;
+  font-family: sans-serif;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 5rem;
+  align-items: center;
+  background: rgb(0, 78, 0);
+  margin: 0;
+}
+
+.cards {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+
+
