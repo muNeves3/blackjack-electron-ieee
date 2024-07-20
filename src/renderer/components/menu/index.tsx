@@ -24,10 +24,31 @@ export default function Menu({
   const [bet, setBet] = useState(0);
   const [isDoubled, setIsDoubled] = useState(false);
   const [stand, setStand] = useState(false);
+  const [pointsPlayer, setPointsPlayer] = useState(0);
+  const [pointsDealer, setPointsDealer] = useState(0);
 
   const amountChange = (e: any) => {
-    if (amount < 1) setAmount(1);
-    else setAmount(e.target.value);
+    setAmount(Math.max(1, e.target.value));
+  };
+
+  const calculate = (cards: CardType[]) => {
+    let total = 0;
+    let aces = 0;
+    cards.forEach((card) => {
+      if (card[1] === 'A') {
+        aces++;
+      } else if (['K', 'Q', 'J'].includes(card[1])) {
+        total += 10;
+      } else {
+        total += Number(card[1]);
+      }
+    });
+
+    for (let i = 0; i < aces; i++) {
+      total += total + 11 <= 21 ? 11 : 1;
+    }
+
+    return total;
   };
 
   function dealCard(deck: CardType[]): { card: CardType; newDeck: CardType[] } {
@@ -64,6 +85,9 @@ export default function Menu({
     setDeck(updatedDeck);
     setCardsPlayer(playerHand);
     setCardsDealer(dealerHand);
+
+    setPointsPlayer(calculate(playerHand));
+    setPointsDealer(calculate(dealerHand));
   }
 
   const betAction = () => {
@@ -87,39 +111,42 @@ export default function Menu({
     setDeck(updatedDeck);
     setIsDoubled(true);
 
-    // Chama endTurn após a ação de doubleDown
-    endTurn({ currentTarget: { value: 'Double Down' } } as React.MouseEvent<
-      HTMLInputElement,
-      MouseEvent
-    >);
+    setPointsPlayer(calculate(playerHand));
+
+    endTurn();
   };
 
   const dealCardsDealer = (updatedDeck: CardType[]) => {
     const dealerHand: CardType[] = [...dealerCards];
+    let points = calculate(dealerHand);
 
-    for (let i = 0; i < 4; i++) {
-      const dealtCard = dealCard(updatedDeck);
+    while (points < 17) {
+      let dealtCard;
+      dealtCard = dealCard(updatedDeck);
       dealerHand.push(dealtCard.card);
       updatedDeck = dealtCard.newDeck;
+      points = calculate(dealerHand);
     }
 
+    setPointsDealer(points);
     setDeck(updatedDeck);
     setCardsDealer(dealerHand);
   };
 
-  const endTurn = (event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-    const updatedDeck =
-      event.currentTarget.value === 'Stand' ? undefined : deck;
+  const endTurn = () => {
     const dealerHand: CardType[] = [...dealerCards];
     dealerHand[dealerHand.length - 1]['2'] = false;
 
     setStand(true);
     setCardsDealer(dealerHand);
 
-    if (updatedDeck) {
-      dealCardsDealer(updatedDeck);
-    } else {
-      dealCardsDealer(deck);
+    dealCardsDealer(deck);
+
+    if (
+      pointsPlayer <= 21 &&
+      (pointsDealer > 21 || pointsPlayer > pointsDealer)
+    ) {
+      setMoney(money + bet * 2);
     }
   };
 
@@ -134,6 +161,13 @@ export default function Menu({
 
     setCardsPlayer(playerHand);
     setDeck(updatedDeck);
+
+    const points = calculate(playerHand);
+    setPointsPlayer(points);
+
+    if (points > 21) {
+      endTurn();
+    }
   };
 
   return (
