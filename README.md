@@ -10,4 +10,4 @@
 
 -Typescript
 
-![Gif demonstração do jogo](/assets/2024-07-20-18-40-34.gif)
+![Demonstração do jogo](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNThtY3ptdnl5Mno1YWJvMXNwMnBucHR2YmN6ZG1objR5OTgzeXlrbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/GihTpUwJoyrsXX5FZI/giphy.gif)
