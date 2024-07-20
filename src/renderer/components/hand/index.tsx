@@ -1,10 +1,18 @@
+import { useState } from 'react';
 import Card from '../card';
 import styles from './hand.module.css';
-export default function Hand() {
+import { CardType } from '../../App';
+
+type handProps = {
+  cardsPlayer: CardType[];
+};
+
+export default function Hand({ cardsPlayer }: handProps) {
   return (
     <div className={styles.main}>
-      <Card hidden={false} suit="♠" value="A" />
-      <Card hidden={true} suit="♠" value="A" />
+      {cardsPlayer.map((card, index) => (
+        <Card key={index} value={card[1]} suit={card[0]} hidden={card[2]} />
+      ))}
     </div>
   );
 }

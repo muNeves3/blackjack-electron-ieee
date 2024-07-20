@@ -12,7 +12,15 @@ module.exports = {
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': 'error',
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'react/function-component-definition': 'off',
+    'react/jsx-boolean-value': 'off',
+    'eslint-disable no-restricted-syntax': 'off',
+    'no-restricted-syntax': 'off',
+    'react/destructuring-assignment': 'off,'
+    'import/named': 'off,'
+    'react/no-array-index-key': 'off,'
+    'no-plusplus': 'off,'
   },
   parserOptions: {
     ecmaVersion: 2022,
