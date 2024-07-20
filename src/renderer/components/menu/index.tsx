@@ -25,10 +25,6 @@ export default function Menu({
   const [isDoubled, setIsDoubled] = useState(false);
   const [stand, setStand] = useState(false);
 
-  useEffect(() => {
-    if (stand == true) endTurn();
-  }, [stand]);
-
   const amountChange = (e: any) => {
     if (amount < 1) setAmount(1);
     else setAmount(e.target.value);
@@ -82,44 +78,60 @@ export default function Menu({
     const playerHand: CardType[] = [...playerCards];
     let updatedDeck = [...deck];
     let dealtCard;
+
     dealtCard = dealCard(updatedDeck);
     playerHand.push(dealtCard.card);
     updatedDeck = dealtCard.newDeck;
+
     setCardsPlayer(playerHand);
     setDeck(updatedDeck);
     setIsDoubled(true);
+
+    // Chama endTurn após a ação de doubleDown
+    endTurn({ currentTarget: { value: 'Double Down' } } as React.MouseEvent<
+      HTMLInputElement,
+      MouseEvent
+    >);
   };
 
-  const dealCardsDealer = () => {
+  const dealCardsDealer = (updatedDeck: CardType[]) => {
+    const dealerHand: CardType[] = [...dealerCards];
+
     for (let i = 0; i < 4; i++) {
-      const playerHand: CardType[] = [...dealerCards];
-
-      let updatedDeck = [...deck];
-      let dealtCard;
-      dealtCard = dealCard(updatedDeck);
-      playerHand.push(dealtCard.card);
+      const dealtCard = dealCard(updatedDeck);
+      dealerHand.push(dealtCard.card);
       updatedDeck = dealtCard.newDeck;
-      setCardsDealer(playerHand);
-      setDeck(updatedDeck);
     }
+
+    setDeck(updatedDeck);
+    setCardsDealer(dealerHand);
   };
 
-  const endTurn = () => {
-    setStand(true);
-    const playerHand: CardType[] = [...dealerCards];
-    playerHand[playerHand.length - 1]['2'] = false;
-    setCardsDealer(playerHand);
+  const endTurn = (event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+    const updatedDeck =
+      event.currentTarget.value === 'Stand' ? undefined : deck;
+    const dealerHand: CardType[] = [...dealerCards];
+    dealerHand[dealerHand.length - 1]['2'] = false;
 
-    dealCardsDealer();
+    setStand(true);
+    setCardsDealer(dealerHand);
+
+    if (updatedDeck) {
+      dealCardsDealer(updatedDeck);
+    } else {
+      dealCardsDealer(deck);
+    }
   };
 
   const hit = () => {
     const playerHand: CardType[] = [...playerCards];
     let updatedDeck = [...deck];
     let dealtCard;
+
     dealtCard = dealCard(updatedDeck);
     playerHand.push(dealtCard.card);
     updatedDeck = dealtCard.newDeck;
+
     setCardsPlayer(playerHand);
     setDeck(updatedDeck);
   };
@@ -146,7 +158,7 @@ export default function Menu({
         value="Double Down"
         style={{ display: bet > 0 ? 'inline' : 'none' }}
         disabled={isDoubled}
-        onClick={doubleDown || stand}
+        onClick={doubleDown}
       />
       <input
         className={styles.bet}
