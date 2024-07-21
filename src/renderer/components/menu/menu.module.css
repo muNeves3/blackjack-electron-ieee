@@ -3,6 +3,11 @@
   align-items: center;
 }
 
+.logoIEEE {
+  margin-top: 0.5rem;
+  margin-right: 1rem;
+}
+
 .amountContainer {
   display: flex;
   justify-content: center;

@@ -1,4 +1,6 @@
-## ♠BLACKJACK♠
+![IEEE Logo](https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg);
+
+## ♠ BLACKJACK ♠
 
 - A blackjack appliction made using Electron, Electron-react boilerplate and Typescript
 

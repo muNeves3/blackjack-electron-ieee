@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import styles from './menu.module.css';
-import { CardType } from '../../App';
+import { CardType, createDeck, shuffleDeck } from '../../App';
 
 type MenuProps = {
   playerCards: CardType[];
@@ -9,6 +9,10 @@ type MenuProps = {
   setCardsDealer: any;
   deck: CardType[];
   setDeck: any;
+  pointsDealer: number;
+  setPointsDealer: any;
+  pointsPlayer: number;
+  setPointsPlayer: any;
 };
 
 export default function Menu({
@@ -18,14 +22,16 @@ export default function Menu({
   setCardsDealer,
   setCardsPlayer,
   setDeck,
+  pointsDealer,
+  setPointsDealer,
+  pointsPlayer,
+  setPointsPlayer,
 }: MenuProps) {
   const [amount, setAmount] = useState(10);
   const [money, setMoney] = useState(100);
   const [bet, setBet] = useState(0);
   const [isDoubled, setIsDoubled] = useState(false);
   const [stand, setStand] = useState(false);
-  const [pointsPlayer, setPointsPlayer] = useState(0);
-  const [pointsDealer, setPointsDealer] = useState(0);
 
   const amountChange = (e: any) => {
     setAmount(Math.max(1, e.target.value));
@@ -35,6 +41,7 @@ export default function Menu({
     let total = 0;
     let aces = 0;
     cards.forEach((card) => {
+      if (card['2']) return;
       if (card[1] === 'A') {
         aces++;
       } else if (['K', 'Q', 'J'].includes(card[1])) {
@@ -103,6 +110,8 @@ export default function Menu({
     let updatedDeck = [...deck];
     let dealtCard;
 
+    setAmount(amount * 2);
+
     dealtCard = dealCard(updatedDeck);
     playerHand.push(dealtCard.card);
     updatedDeck = dealtCard.newDeck;
@@ -148,6 +157,21 @@ export default function Menu({
     ) {
       setMoney(money + bet * 2);
     }
+    if (pointsPlayer <= 21 && pointsPlayer === pointsDealer) {
+      setMoney(money + bet);
+    }
+
+    setTimeout(() => {
+      setCardsDealer([]);
+      setCardsPlayer([]);
+      let deck = createDeck();
+      setDeck(shuffleDeck(deck));
+      setBet(0);
+      setPointsPlayer(0);
+      setPointsDealer(0);
+      setIsDoubled(false);
+      setStand(false);
+    }, 2000);
   };
 
   const hit = () => {
@@ -172,6 +196,11 @@ export default function Menu({
 
   return (
     <div className={styles.menu}>
+      <img
+        className={styles.logoIEEE}
+        src="https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg"
+        alt="iee logo"
+      />
       <div className={styles.money}>R${money}</div>
       <div className={styles.amountContainer}>
         <h4>Quantidade: </h4>
