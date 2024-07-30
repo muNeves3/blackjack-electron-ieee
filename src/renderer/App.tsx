@@ -2,6 +2,8 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import styles from './App.module.css';
 import Menu from './components/menu';
 import Hand from './components/hand';
+import audio from '../../assets/cuphead.mp3';
+import gif from '../../assets/resized.gif';
 import { useEffect, useState } from 'react';
 
 export type CardType = [string, string, boolean];
@@ -64,6 +66,10 @@ function Init() {
 
   return (
     <div className={styles.body}>
+      <audio autoPlay={true} loop>
+        {/* <source src={audio} type="audio/mpeg" /> */}
+      </audio>
+
       <Menu
         dealerCards={cardsDealer}
         deck={deck}
@@ -84,10 +90,12 @@ function Init() {
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Init />} />
-      </Routes>
-    </Router>
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Init />} />
+        </Routes>
+      </Router>
+    </>
   );
 }

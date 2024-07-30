@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './menu.module.css';
 import { CardType, createDeck, shuffleDeck } from '../../App';
 
@@ -32,16 +32,16 @@ export default function Menu({
   const [bet, setBet] = useState(0);
   const [isDoubled, setIsDoubled] = useState(false);
   const [stand, setStand] = useState(false);
+  const [turnProcessed, setTurnProcessed] = useState(false); // Nova variável de estado
 
   const amountChange = (e: any) => {
     setAmount(Math.max(1, e.target.value));
   };
 
-  const calculate = (cards: CardType[]) => {
+  const calculate = useCallback((cards: CardType[]) => {
     let total = 0;
     let aces = 0;
     cards.forEach((card) => {
-      if (card['2']) return;
       if (card[1] === 'A') {
         aces++;
       } else if (['K', 'Q', 'J'].includes(card[1])) {
@@ -56,7 +56,7 @@ export default function Menu({
     }
 
     return total;
-  };
+  }, []);
 
   function dealCard(deck: CardType[]): { card: CardType; newDeck: CardType[] } {
     const deckControl = [...deck];
@@ -67,7 +67,7 @@ export default function Menu({
     return { card, newDeck: deckControl };
   }
 
-  function dealInitialCards() {
+  const dealInitialCards = useCallback(() => {
     const playerHand: CardType[] = [];
     const dealerHand: CardType[] = [];
     let updatedDeck = [...deck];
@@ -95,17 +95,53 @@ export default function Menu({
 
     setPointsPlayer(calculate(playerHand));
     setPointsDealer(calculate(dealerHand));
-  }
+  }, [
+    deck,
+    setDeck,
+    setCardsPlayer,
+    setCardsDealer,
+    setPointsPlayer,
+    setPointsDealer,
+    calculate,
+  ]);
 
-  const betAction = () => {
+  const betAction = useCallback(() => {
     if (money >= amount) {
       setBet(amount);
       setMoney(money - amount);
       dealInitialCards();
     }
-  };
+  }, [amount, money, dealInitialCards]);
 
-  const doubleDown = () => {
+  const dealCardsDealer = useCallback(
+    (updatedDeck: CardType[]) => {
+      const dealerHand: CardType[] = [...dealerCards];
+      let points = calculate(dealerHand);
+
+      while (points < 17) {
+        let dealtCard;
+        dealtCard = dealCard(updatedDeck);
+        dealerHand.push(dealtCard.card);
+        updatedDeck = dealtCard.newDeck;
+        points = calculate(dealerHand);
+      }
+
+      setPointsDealer(points);
+      setDeck(updatedDeck);
+      setCardsDealer(dealerHand);
+    },
+    [dealerCards, setPointsDealer, setCardsDealer, setDeck, calculate],
+  );
+
+  const endTurn = useCallback(() => {
+    const dealerHand: CardType[] = [...dealerCards];
+    dealerHand[dealerHand.length - 1]['2'] = false;
+
+    setStand(true);
+    dealCardsDealer(deck);
+  }, [dealCardsDealer, deck, dealerCards]);
+
+  const doubleDown = useCallback(() => {
     const playerHand: CardType[] = [...playerCards];
     let updatedDeck = [...deck];
     let dealtCard;
@@ -123,56 +159,65 @@ export default function Menu({
     setPointsPlayer(calculate(playerHand));
 
     endTurn();
-  };
+  }, [
+    playerCards,
+    setCardsPlayer,
+    pointsPlayer,
+    setPointsPlayer,
+    amount,
+    setAmount,
+    deck,
+    setDeck,
+    calculate,
+    endTurn,
+  ]);
 
-  const dealCardsDealer = (updatedDeck: CardType[]) => {
-    const dealerHand: CardType[] = [...dealerCards];
-    let points = calculate(dealerHand);
+  useEffect(() => {
+    if (stand && !turnProcessed) {
+      console.log('player: ' + pointsPlayer);
+      console.log('dealer: ' + pointsDealer);
 
-    while (points < 17) {
-      let dealtCard;
-      dealtCard = dealCard(updatedDeck);
-      dealerHand.push(dealtCard.card);
-      updatedDeck = dealtCard.newDeck;
-      points = calculate(dealerHand);
+      if (
+        pointsPlayer <= 21 &&
+        (pointsDealer > 21 || pointsPlayer > pointsDealer)
+      ) {
+        setMoney(money + bet * 2);
+      } else if (pointsPlayer <= 21 && pointsPlayer === pointsDealer) {
+        setMoney(money + bet);
+      }
+
+      setTurnProcessed(true); // Marcar o turno como processado
+
+      setTimeout(() => {
+        setCardsDealer([]);
+        setCardsPlayer([]);
+        let newDeck = createDeck();
+        setDeck(shuffleDeck(newDeck));
+        setBet(0);
+        setPointsPlayer(0);
+        setPointsDealer(0);
+        setIsDoubled(false);
+        setStand(false);
+        setTurnProcessed(false); // Resetar o estado do turno processado
+      }, 2000);
     }
-
-    setPointsDealer(points);
-    setDeck(updatedDeck);
-    setCardsDealer(dealerHand);
-  };
-
-  const endTurn = () => {
-    const dealerHand: CardType[] = [...dealerCards];
-    dealerHand[dealerHand.length - 1]['2'] = false;
-
-    setStand(true);
-    setCardsDealer(dealerHand);
-
-    dealCardsDealer(deck);
-
-    if (
-      pointsPlayer <= 21 &&
-      (pointsDealer > 21 || pointsPlayer > pointsDealer)
-    ) {
-      setMoney(money + bet * 2);
-    }
-    if (pointsPlayer <= 21 && pointsPlayer === pointsDealer) {
-      setMoney(money + bet);
-    }
-
-    setTimeout(() => {
-      setCardsDealer([]);
-      setCardsPlayer([]);
-      let deck = createDeck();
-      setDeck(shuffleDeck(deck));
-      setBet(0);
-      setPointsPlayer(0);
-      setPointsDealer(0);
-      setIsDoubled(false);
-      setStand(false);
-    }, 2000);
-  };
+  }, [
+    stand,
+    pointsDealer,
+    pointsPlayer,
+    bet,
+    money,
+    setMoney,
+    setCardsDealer,
+    setCardsPlayer,
+    setDeck,
+    setBet,
+    setPointsPlayer,
+    setPointsDealer,
+    setIsDoubled,
+    setStand,
+    turnProcessed,
+  ]);
 
   const hit = () => {
     const playerHand: CardType[] = [...playerCards];
@@ -189,10 +234,14 @@ export default function Menu({
     const points = calculate(playerHand);
     setPointsPlayer(points);
 
-    if (points > 21) {
+    if (points >= 21) {
       endTurn();
     }
   };
+
+  useEffect(() => {
+    console.log('Dealer points updated:', pointsDealer);
+  }, [pointsDealer]);
 
   return (
     <div className={styles.menu}>

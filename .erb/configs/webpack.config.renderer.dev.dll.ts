@@ -18,7 +18,6 @@ const configuration: webpack.Configuration = {
   context: webpackPaths.rootPath,
 
   devtool: 'eval',
-
   mode: 'development',
 
   target: 'electron-renderer',
@@ -66,6 +65,7 @@ const configuration: webpack.Configuration = {
       debug: true,
       options: {
         context: webpackPaths.srcPath,
+        name: '[path][name].[ext]',
         output: {
           path: webpackPaths.dllPath,
         },
