@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
 import styles from './menu.module.css';
-import { CardType, createDeck, shuffleDeck } from '../../App';
+import { useCallback, useEffect, useState } from 'react';
+import { CardType, createDeck, shuffleDeck } from '../game';
+import { useNavigate } from 'react-router-dom';
 
 type MenuProps = {
   playerCards: CardType[];
@@ -33,9 +34,10 @@ export default function Menu({
   const [isDoubled, setIsDoubled] = useState(false);
   const [stand, setStand] = useState(false);
   const [turnProcessed, setTurnProcessed] = useState(false); // Nova variável de estado
+  const navigate = useNavigate();
 
   const amountChange = (e: any) => {
-    setAmount(Math.max(1, e.target.value));
+    setAmount(Math.max(0, e.target.value));
   };
 
   const calculate = useCallback((cards: CardType[]) => {
@@ -176,14 +178,22 @@ export default function Menu({
     if (stand && !turnProcessed) {
       console.log('player: ' + pointsPlayer);
       console.log('dealer: ' + pointsDealer);
-
+      let finalMoney = money;
       if (
         pointsPlayer <= 21 &&
         (pointsDealer > 21 || pointsPlayer > pointsDealer)
       ) {
         setMoney(money + bet * 2);
+        finalMoney = money + bet * 2;
       } else if (pointsPlayer <= 21 && pointsPlayer === pointsDealer) {
         setMoney(money + bet);
+        finalMoney = money + bet;
+      }
+
+      if (finalMoney <= 0) {
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
       }
 
       setTurnProcessed(true); // Marcar o turno como processado
@@ -245,15 +255,10 @@ export default function Menu({
 
   return (
     <div className={styles.menu}>
-      <img
-        className={styles.logoIEEE}
-        src="https://upload.wikimedia.org/wikipedia/commons/2/21/IEEE_logo.svg"
-        alt="iee logo"
-      />
       <div className={styles.money}>R${money}</div>
       <div className={styles.amountContainer}>
         <h4>Quantidade: </h4>
-        <input type="number" value={amount} onChange={amountChange} />
+        <input value={amount} onChange={amountChange} />
       </div>
       <input
         className={styles.bet}

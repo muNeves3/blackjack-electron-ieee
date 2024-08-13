@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Card from '../card';
 import styles from './hand.module.css';
-import { CardType } from '../../App';
+import { CardType } from '../game';
 
 type handProps = {
   cardsPlayer: CardType[];
